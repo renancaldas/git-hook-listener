@@ -31,7 +31,7 @@ An application that listens webhook for continuous deployment
    $ NODE_ENV=development DEBUG=git* node git-hook-listener.js
 ```
 
-##### 4) Testing if application is running
+##### 4) Test if application is up and running
 Make a GET request to the endpoint running in your machine, for example: 
 ```sh
    $ curl http://localhost:3000/test
