@@ -1,0 +1,13 @@
+{
+	"config": {
+		"serverPort": 3000,
+		"bitbucket": {
+			"user": "your_user_name",
+			"pass": "your_password"
+		},
+		"repo": {
+			"destinationPath": "/path/to/download/",
+			"npmInstallPath": "/relative/path/to/executable"
+		}
+	}
+}

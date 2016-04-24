@@ -1,0 +1,27 @@
+{
+  "name": "git-hook-listener",
+  "version": "1.0.0",
+  "description": "",
+  "main": "test.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "NODE_ENV=development DEBUG=git-hook-listener* node git-hook-listener.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://renancaldas@bitbucket.org/renancaldas/test.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "homepage": "https://bitbucket.org/renancaldas/test#readme",
+  "dependencies": {
+    "backmonitor": "0.0.2",
+    "body-parser": "^1.15.0",
+    "config": "^1.19.0",
+    "debug": "^2.2.0",
+    "express": "^4.13.4",
+    "http": "0.0.0",
+    "q": "^1.4.1",
+    "shelljs": "^0.6.0"
+  }
+}
