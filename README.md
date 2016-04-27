@@ -1,16 +1,16 @@
 # Git Hook Listener
 
-An application that listens webhook for continuous deployment
+An application for continuous deployment that listens webhooks and downloads updates 
 
 #### Initial configuration
 
 ##### 1) Installation
 ```sh
   $ cd [path to install]
-  $ git clone https://github.com/renanzeira/git-hook-listener.git
+  $ git clone https://github.com/renancaldas/git-hook-listener.git
   $ npm install
 ```
-##### 2) Edit config file in folder /git-hook-listener/config/development.json
+##### 2) Edit config file in folder /git-hook-listener/config
 ```
 {
 	"config": {
@@ -40,6 +40,6 @@ Make a GET request to the endpoint running in your machine, for example:
 If appears the message "`Ready to use POST /hook endpoint!`" you are ready to go!
 
 ##### 5) Config webhook
-Go to https://bitbucket.org/, select your repository then go to Settings -> Webhooks and create a request to the application running, ending with the `/hook`. For example: `http://www.your_domain_running_the_app.com:port/hook`. OBS.: If you are running in localhost, you should create a proxy for receving external requests. Ngrok is a good option: https://ngrok.com/ 
+Go to [bitbucket](https://bitbucket.org/) / [github](https://github.com), select your repository then go to Settings -> Webhooks and create a request to the application running, ending with the `/hook`. For example: `http://www.your_domain_running_the_app.com:port/hook`. OBS.: If you are running in your local machine using localhost, you should create a proxy for receving external requests from the internet. Ngrok is a good option: https://ngrok.com/ 
 
-Finally, you can push changes to your repository and then the application will make a git clone to the folder specified in the config file.
+Finally, you can push changes to your repository which will trigger the webhook to the application and then make a git clone / pull to the specified folder in the config file.
