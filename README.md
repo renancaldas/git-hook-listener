@@ -19,15 +19,15 @@ Windows users, please give me a feedback.
 
 ```
   // In CMD, write:
-  $ vi ~/.netrc
+  $ nano ~/.netrc
   
-  // Add these lines:
+  // And add these lines:
   machine github.com (or bitbucket.org)
   login [YOUR_USER]
   password [YOUR_PASS]
   
-  // And save it using: 
-  // ESC, then :wq (you will see at the botton) and press ENTER
+  // Save it using: CMD + o
+  // And exit using: CMD + x
 ```
 ##### 2) Download this project
 ```
@@ -41,19 +41,24 @@ You should have [nodemon](https://github.com/remy/nodemon) installed! If you don
    $ npm start
    // Which runs: NODE_ENV=development DEBUG=git* nodemon git-hook-listener.js
 ```
+It should appear the message: `git-hook-listener.js Server started at port 3000 +0ms`
 
 ##### 4) Test if application is up and running
-Make a GET request to the endpoint running in your machine, for example: 
-```sh
-   $ curl http://localhost:3000/test
+Make a GET request to the endpoint running, for example: 
+```
+    // Open a new CMD, because the current window is running the application
+    $ curl http://localhost:3000/test
+
+    // Or try connecting remotelly
+    $ curl http://www.your_domain_running_the_app.com:3000/test
 ```
 
-If appears the message "`Ready to use POST /hook endpoint!`" you are ready to go!
+If appears the message "`Ready to use POST /hook endpoint!`" you are good to go!
 
 ##### 5) Configuring webhook
 Go to your Git repo (like [bitbucket](https://bitbucket.org/)), select your repository then go to **Settings** -> **Webhooks** and create a request to the application, ending with the `/hook`. For example: `http://www.your_domain_running_the_app.com:port/hook`. 
 
-**Obs**: If you are running in your local machine using **localhost**, you should create a proxy for receving external requests from the internet. In this case, I recommend **Ngrok**: https://ngrok.com/.
+**Obs**: If you are running in your local machine using **localhost**, you should create a proxy for receving external requests from the internet. In this case, I recommend **Ngrok** for testing: https://ngrok.com/.
 
 ##### 6) It is done!
 Finally, you can push changes to your repository. It will trigger the webhook to the application and do a git clone / pull to your server in the specified folder in the config file, automatically! 
