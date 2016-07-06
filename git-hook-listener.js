@@ -8,17 +8,6 @@ var shell = require("shelljs");
 var fs = require("fs");
 var Q = require("q");
 
-/* TODO: init backmonitor
-var options = {
-    serverUrl: config.backmonitor.serverUrl,
-    clientId: config.backmonitor.clientId, 
-    applicationId: config.backmonitor.applicationId,
-    listenerPort: 4001, // Optional
-    persistConnection: true // Optional
-}
-var backmonitor = require('backmonitor')(options);
-*/
-
 var oneDay = 86400000; // Cache data for 1 day
 app.use(express.static(__dirname + '/web', { maxAge: oneDay }));
 
@@ -33,7 +22,7 @@ router.route('/update')
 		res.status(200).send('Webhook Received. Please check the monitor for more information.');
 
   		debug('Updating git-hook-listener from ' + config.bitbucket.source);
-		shell.exec('cd ' + config.bitbucket.listenerPath + ' && git pull', { silent:true, async:true }, function(code, stdout, stderr){
+		shell.exec('cd ' + config.bitbucket.listenerPath + ' && git reset --hard HEAD && git pull', { silent:true, async:true }, function(code, stdout, stderr){
 			if(code == 0) {
 				var message = 'Updated successfully!';
 				debug(message);
@@ -46,12 +35,16 @@ router.route('/update')
 
 router.route('/test')
   .get(function(req, res, next) {  
-  		res.status(200).send('Ready to use POST /hook endpoint!');
+  		var message = 'Ready to use POST /hook endpoint! \n';
+  		debug(message)
+  		res.status(200).send(message);
   });
 
 router.route('/hook')
   .post(function(req, res, next) {  
-		res.status(200).send('Webhook Received. Please check the monitor for more information.');
+  		var messageWebhook = 'Webhook Received. Please check the monitor for more information.';
+  		debug(messageWebhook);
+		res.status(200).send(messageWebhook);
 
   		try {
   			// Promises
@@ -63,9 +56,20 @@ router.route('/hook')
 				debug('Cloning from ' + repo.url + ' into ' + localpath);
 				shell.exec('git clone ' + repo.url + ' ' + localpath, { silent:true, async:true }, function(code, stdout, stderr) {
 					if(code == 0) {
-						var message = 'Cloned successfully!';
-						debug(message);
-						deferred.resolve(message);
+						debug('Cloned successfully!');
+
+						// GIT fetch and checkout branch into cloned folder
+						shell.exec('cd ' + localpath + ' && git fetch && git checkout ' + repo.branch, { silent:true, async:true }, function(code, stdout, stderr) {
+							if(code == 0) {
+								var message = repo.branch + ' checked out successfully!';
+								debug(message);
+								deferred.resolve(message);
+							}
+							else {
+								debug('Error on fetch and checkout: ' + stderr);
+								deferred.reject(stderr);
+							}
+						});
 					}
 					else {
 						debug('Error on cloning repo: ' + stderr);
@@ -80,7 +84,7 @@ router.route('/hook')
 	  			var deferred = Q.defer();
 
 	  			debug('pulling from ' + repo.url + ' into ' + localpath);
-				shell.exec('cd ' + localpath + ' && git pull', { silent:true, async:true }, function(code, stdout, stderr){
+				shell.exec('cd ' + localpath + ' && git reset --hard HEAD && git pull', { silent:true, async:true }, function(code, stdout, stderr){
 					if(code == 0) {
 						var message = 'pulled successfully!';
 						debug(message);
@@ -123,68 +127,68 @@ router.route('/hook')
 				var message = 'Could not get repository data. Please install git first!';
 				debug(message);
 
-		    	// Getting bitbucket's 10s timeout, use monitor instead
-	    		// res.status(500).json({ message: message });
+			    	// Getting bitbucket's 10s timeout, use monitor instead
+		    		// res.status(500).json({ message: message });
 			}
 			else {
+				debug('Git detected! Ready for receiving data from webhook.');
+
 				// Validate received value
 				if(req.body.push.changes.length == 1) {
 					var changes = req.body.push.changes[0];
 
-					// Parse hook
+					// Parse hook (check if has new changes)
 					var repo = {
-						user: config.bitbucket.user,
-						pass: config.bitbucket.pass,
 						localpath: config.repo.destinationPath + '/',
-						branch: changes.new.name,
-						name: changes.new.repository.name
+						branch: changes.new ? changes.new.name : changes.old.name,
+						name: changes.new ? changes.new.repository.name : changes.old.repository.name
 					};
-					repo.url = changes.new.links.html.href.replace('bitbucket.org', repo.user + ':' +  repo.pass + '@bitbucket.org');
+					repo.url = changes.new ? changes.new.links.html.href : changes.old.links.html.href;
 
 					// Verify if has folder created
-		    		if (!fs.existsSync(repo.localpath)) {
-					    fs.mkdirSync(repo.localpath);
-		    			debug('Created folder ' + repo.localpath);
-		    		}
+			    		if (!fs.existsSync(repo.localpath)) {
+						    fs.mkdirSync(repo.localpath);
+			    			debug('Created folder ' + repo.localpath);
+			    		}
 
-		    		// Verify if a folder has been commited
-		    		var localpath = repo.localpath + '/' + repo.name + '/' + repo.branch;
-		    		debug(localpath);
-		    		fs.exists(localpath, function(exists) {
-		    			if(!exists) {
+		    			// Verify if a folder has been commited
+			    		var localpath = repo.localpath + '/' + repo.name + '/' + repo.branch;
+			    		debug(localpath);
+			    		fs.exists(localpath, function(exists) {
+			    			if(!exists) {
 
-		    				// GIT clone (when folder is empty)
-		    				gitClone(repo, localpath).then(function(gitCloneMsg){
-		    					npmInstall(localpath).then(function(npmInstallMsg){
-		    						// Getting bitbucket's 10s timeout, use monitor instead
-			    					// res.status(200).json({ message: gitCloneMsg });
-		    					}, function(npmInstallErr){
-		    						// Getting bitbucket's 10s timeout, use monitor instead
-				    				//res.status(500).json({ message: npmInstallErr });
-		    					});
-		    				}, function(gitCloneErr){
-		    					// Getting bitbucket's 10s timeout, use monitor instead
-				    			//res.status(500).json({ message: gitCloneErr });
-		    				});
+			    				// GIT clone (when folder is empty)
+			    				gitClone(repo, localpath).then(function(gitCloneMsg){
+			    					npmInstall(localpath).then(function(npmInstallMsg){
+			    						// Getting bitbucket's 10s timeout, use monitor instead
+				    					// res.status(200).json({ message: gitCloneMsg });
+			    					}, function(npmInstallErr){
+			    						// Getting bitbucket's 10s timeout, use monitor instead
+					    				//res.status(500).json({ message: npmInstallErr });
+			    					});
+			    				}, function(gitCloneErr){
+			    					// Getting bitbucket's 10s timeout, use monitor instead
+					    			//res.status(500).json({ message: gitCloneErr });
+			    				});
 
-		    			}
+			    			}
 
-		    			else {
+			    			else {
 
-		    				// GIT pull (just grab latest updates)
-		    				gitPull(repo, localpath).then(function(gitPullMsg){
-		    					npmInstall(localpath).then(function(npmInstallMsg){
-		    						// Getting bitbucket's 10s timeout, use monitor instead
-			    					//res.status(200).json({ message: gitPullMsg });
-		    					}, function(npmInstallErr){
-		    						// Getting bitbucket's 10s timeout, use monitor instead
-				    				//res.status(500).json({ message: npmInstallErr });
-		    					});
-		    				}, function(gitPullErr){
-		    					// Getting bitbucket's 10s timeout, use monitor instead
-				    			//res.status(500).json({ message: gitPullErr });
-		    				});
-		    			}
+			    				// GIT pull (just grab latest updates)
+			    				gitPull(repo, localpath).then(function(gitPullMsg){
+			    					npmInstall(localpath).then(function(npmInstallMsg){
+			    						// Getting bitbucket's 10s timeout, use monitor instead
+				    					//res.status(200).json({ message: gitPullMsg });
+			    					}, function(npmInstallErr){
+			    						// Getting bitbucket's 10s timeout, use monitor instead
+					    				//res.status(500).json({ message: npmInstallErr });
+			    					});
+			    				}, function(gitPullErr){
+			    					// Getting bitbucket's 10s timeout, use monitor instead
+					    			//res.status(500).json({ message: gitPullErr });
+			    				});
+			    			}
 					});
 				}
 			}

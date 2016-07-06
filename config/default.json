@@ -2,12 +2,12 @@
 	"config": {
 		"serverPort": 3000,
 		"bitbucket": {
-			"user": "your_user_name",
-			"pass": "your_password"
+			"source": "https://github.com/renancaldas/git-hook-listener.git",
+			"listenerPath": "~/git-hook-listener"
 		},
 		"repo": {
-			"destinationPath": "/path/to/download/",
-			"npmInstallPath": "/relative/path/to/executable"
+			"destinationPath": "~",
+			"npmInstallPath": "/"
 		}
 	}
 }
