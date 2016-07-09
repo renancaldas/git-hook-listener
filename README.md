@@ -18,7 +18,7 @@ This is for avoiding prompting your user and password when doing a git pull.
 Windows users, please give me a feedback.
 
 ```
-  // In CMD, write:
+  // In terminal, write:
   $ nano ~/.netrc
   
   // And add these lines:

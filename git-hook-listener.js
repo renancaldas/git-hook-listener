@@ -133,30 +133,48 @@ router.route('/hook')
 			else {
 				debug('Git detected! Ready for receiving data from webhook.');
 
-				// Validate received value
-				if(req.body.push.changes.length == 1) {
-					var changes = req.body.push.changes[0];
+				// Check source (Github, Bitbucket)
+				var repo = null;
+				if(req.headers['user-agent'].toLowerCase().indexOf('bitbucket') !== -1) {
 
-					// Parse hook (check if has new changes)
+					// Validate received value
+					if(req.body.push.changes.length == 1) {
+						var changes = req.body.push.changes[0];
+						var repo = {
+							branch: changes.new ? changes.new.name : changes.old.name,
+							name: changes.new ? changes.new.repository.name : changes.old.repository.name,
+							url: changes.new ? changes.new.links.html.href : changes.old.links.html.href
+						};
+					}
+				}
+				else if(req.headers['user-agent'].toLowerCase().indexOf('github') !== -1) {
 					var repo = {
-						localpath: config.repo.destinationPath + '/',
-						branch: changes.new ? changes.new.name : changes.old.name,
-						name: changes.new ? changes.new.repository.name : changes.old.repository.name
+						branch: req.body.ref.split('/')[req.body.ref.split('/').length-1],
+						name: req.body.repository.name,
+						url: req.body.repository.html_url
 					};
-					repo.url = changes.new ? changes.new.links.html.href : changes.old.links.html.href;
+				}
+				else {
+					debug('Webhook\'s repository not added in parse yet.');
+				}
+
+				// Checking if has initialized repo data
+				if(!repo) {
+					debug('Repo data not initialized');
+				}
+				else {
+					var localpath = config.repo.destinationPath + '/' + repo.name + '/';
 
 					// Verify if has folder created
-			    		if (!fs.existsSync(repo.localpath)) {
-						    fs.mkdirSync(repo.localpath);
-			    			debug('Created folder ' + repo.localpath);
+			    		if (!fs.existsSync(localpath)) {
+					    fs.mkdirSync(localpath);
+			    			debug('Created folder ' + localpath);
 			    		}
 
-		    			// Verify if a folder has been commited
-			    		var localpath = repo.localpath + '/' + repo.name + '/' + repo.branch;
-			    		debug(localpath);
+					// Verify if folder exists (has been cloned)
+			    		localpath += repo.branch;
 			    		fs.exists(localpath, function(exists) {
 			    			if(!exists) {
-
 			    				// GIT clone (when folder is empty)
 			    				gitClone(repo, localpath).then(function(gitCloneMsg){
 			    					npmInstall(localpath).then(function(npmInstallMsg){
