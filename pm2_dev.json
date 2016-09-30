@@ -1,0 +1,11 @@
+{
+  "apps" : [{
+    "name"        : "git-hook-listener",
+    "script"      : "~/git-hook-listener/git-hook-listener.js",
+    "watch"       : true,
+    "ignore_watch": [".git", "node_modules"],
+    "env": {
+      "NODE_ENV": "development",
+    }
+  }]
+}
