@@ -105,12 +105,9 @@ Finally, you can push changes to your repository. It will trigger the webhook to
 
 &nbsp;
 
+
 ### 4. Author
 ---
 Renan Caldas de Oliveira
 
 - Web: http://www.renancaldas.com
-- E-mail: renan.caldas@outlook.com
-- Twitter: https://twitter.com/renanzeirah
-- Github: https://github.com/renancaldas
-- Facebook: https://www.facebook.com/renan.caldas.oliveira
