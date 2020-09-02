@@ -15,7 +15,7 @@
   "license": "ISC",
   "homepage": "https://bitbucket.org/renancaldas/test#readme",
   "dependencies": {
-    "bl": "^1.2.0",
+    "bl": "^4.0.3",
     "body-parser": "^1.15.0",
     "config": "^1.19.0",
     "debug": "^2.2.0",
